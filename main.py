@@ -25,6 +25,15 @@ import src.log as log
 
 from src.model import LinearModel, weight_init
 from src.datasets.human36m import Human36M
+from src.disconet_model import loss_function
+from src.disconet_model import DiscoNetModel
+import ipdb
+
+import pickle
+from functools import partial
+
+pickle.load = partial(pickle.load, encoding="latin1")
+pickle.Unpickler = partial(pickle.Unpickler, encoding="latin1")
 
 
 def main(opt):
@@ -38,7 +47,7 @@ def main(opt):
 
     # create model
     print(">>> creating model")
-    model = LinearModel()
+    model = DiscoNetModel()
     model = model.cuda()
     model.apply(weight_init)
     print(">>> total params: {:.2f}M".format(sum(p.numel() for p in model.parameters()) / 1000000.0))
@@ -72,7 +81,7 @@ def main(opt):
     # data loading
     print(">>> loading data")
     # load statistics data
-    stat_3d = torch.load(os.path.join(opt.data_dir, 'stat_3d.pth.tar'))
+    stat_3d = torch.load(os.path.join(opt.data_dir, 'stat_3d.pth.pt'))
     # test
     if opt.test:
         err_set = []
@@ -163,6 +172,9 @@ def train(train_loader, model, criterion, optimizer,
     bar = Bar('>>>', fill='>', max=len(train_loader))
 
     for i, (inps, tars) in enumerate(train_loader):
+        inps = inps.view(-1, 32)
+        tars = tars.view(-1, 48)
+
         glob_step += 1
         if glob_step % lr_decay == 0 or glob_step == 1:
             lr_now = utils.lr_decay(optimizer, glob_step, lr_init, lr_decay, gamma)
@@ -173,7 +185,7 @@ def train(train_loader, model, criterion, optimizer,
 
         # calculate loss
         optimizer.zero_grad()
-        loss = criterion(outputs, targets)
+        loss, _, _ = loss_function(outputs, targets)
         losses.update(loss.data[0], inputs.size(0))
         loss.backward()
         if max_norm:
