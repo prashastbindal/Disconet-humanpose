@@ -2,7 +2,7 @@
 This is an adaptation of the DISCONet[1] paper(which estimates hand pose) for human 3D pose estimation from 2D pose
 
 
-Thanks to [weigq](https://github.com/weigq) for provided pytorch dataloaders and Human3.6M 2D to 3D datasets.
+Thanks to [weigq](https://github.com/weigq) for the shared pytorch dataloaders and Human3.6M 2D to 3D datasets.
 
 
 References
