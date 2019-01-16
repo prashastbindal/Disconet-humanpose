@@ -26,3 +26,4 @@ h36m_ft/
 Would skip repository src/progress
 
 !img/*.png
+**/progress @ a83f91f
